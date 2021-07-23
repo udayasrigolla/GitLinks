@@ -126,7 +126,7 @@
         }
 		},
     {
-        "name": "demovm",
+        "name": "sample2",
         "type": "Microsoft.Compute/virtualMachines",
         "apiVersion": "2019-07-01",
         "location": "[resourceGroup().location]",
