@@ -11,7 +11,7 @@
     "location": {
       "type": "string",
       "metadata": {
-        "description": "Specify a location for the resources."
+        "description": "Specify a location for the resource."
       }
     },
     "storageSKU": {
