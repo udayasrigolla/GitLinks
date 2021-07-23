@@ -38,7 +38,7 @@
         "properties": {
             "publicIPAllocationMethod": "Dynamic",
             "dnsSettings": {
-                "domainNameLabel": "[toLower('mynewvm12')]"
+                "domainNameLabel": "[toLower('mynewvm12345')]"
             }
         }
     },
