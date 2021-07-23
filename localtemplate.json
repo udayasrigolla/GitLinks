@@ -1,0 +1,180 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        
+    },
+    "functions": [],
+    "resources": [
+        {
+      "name": "linkedTemplate",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "relativePath": "linkedtemplate.json"
+        },
+        "parameters": {
+          "storageAccountName": {
+            "value": "teststorz1234aravind"
+          },
+          "location": {
+            "value": "westus"
+          }
+        }
+        }
+      
+    },
+	{
+        "name": "mynewvm-PublicIP12679",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2019-11-01",
+        "location": "[resourceGroup().location]",
+        "tags": {
+            "displayName": "PublicIPAddress"
+        },
+        "properties": {
+            "publicIPAllocationMethod": "Dynamic",
+            "dnsSettings": {
+                "domainNameLabel": "[toLower('mynewvm12')]"
+            }
+        }
+    },
+    {
+        "name": "mynewvm-nsg12",
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "apiVersion": "2018-08-01",
+        "location": "[resourceGroup().location]",
+        "properties": {
+			"securityRules": [
+                {
+                    "name": "nsgRule1",
+                    "properties": {
+                        "description": "description",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "3389",
+                        "sourceAddressPrefix": "*",
+                        "destinationAddressPrefix": "*",
+                        "access": "Allow",
+                        "priority": 100,
+                        "direction": "Inbound"
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "name": "mynewvm-VirtualNetwork12",
+        "type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2019-11-01",
+		"location": "[resourceGroup().location]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Network/networkSecurityGroups', 'mynewvm-nsg12')]"
+        ],
+        "tags": {
+            "displayName": "mynewvm-VirtualNetwork"
+        },
+        "properties": {
+            "addressSpace": {
+                "addressPrefixes": [
+                    "10.0.0.0/16"
+                ]
+            },
+            "subnets": [
+                {
+                    "name": "mynewvm-VirtualNetwork-Subnet12",
+                    "properties": {
+                        "addressPrefix": "10.0.0.0/24",
+                        "networkSecurityGroup": {
+							"id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'mynewvm-nsg12')]"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "name": "mynewvm-NetworkInterface12",
+        "type": "Microsoft.Network/networkInterfaces",
+        "apiVersion": "2019-11-01",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Network/publicIPAddresses', 'mynewvm-PublicIP12')]",
+            "[resourceId('Microsoft.Network/virtualNetworks', 'mynewvm-VirtualNetwork12')]"
+        ],
+        "tags": {
+            "displayName": "mynewvm Network Interface"
+        },
+		"properties": {
+            "ipConfigurations": [
+                {
+                    "name": "ipConfig12",
+                    "properties": {
+                        "privateIPAllocationMethod": "Dynamic",
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'mynewvm-PublicIP12')]"
+                        },
+                        "subnet": {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets','mynewvm-VirtualNetwork12', 'mynewvm-VirtualNetwork-Subnet12')]"
+                        }
+                    }
+                }
+            ]
+        }
+		},
+    {
+        "name": "samplevm",
+        "type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2019-07-01",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          
+            "[resourceId('Microsoft.Network/networkInterfaces', 'mynewvm-NetworkInterface12')]"
+        ],
+        "tags": {
+            "displayName": "mynewvm12"
+        },
+        "properties": {
+            "hardwareProfile": {
+                "vmSize": "Standard_B1s"
+            },
+            "osProfile": {
+                "computerName": "mynewvm12",
+                "adminUsername": "adminUsername",
+                "adminPassword": "Random1234$$"
+            },
+			"storageProfile": {
+                "imageReference": {
+                    "publisher": "MicrosoftWindowsServer",
+                    "offer": "WindowsServer",
+                    "sku": "2012-R2-Datacenter",
+                    "version": "latest"
+                },
+                "osDisk": {
+                    "name": "mynewvmOSDisk",
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage"
+                }
+            },
+            "networkProfile": {
+                "networkInterfaces": [
+                    {
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', 'mynewvm-NetworkInterface12')]"
+                    }
+                ]
+            }
+			
+        }
+    }],
+    "outputs": {
+         "storageEndpoint": {
+      "type": "object",
+      "value": "[reference('linkedTemplate').outputs.storageEndpoint.value]"
+    }
+    }
+}
+
+
