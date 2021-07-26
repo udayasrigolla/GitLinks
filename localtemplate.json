@@ -126,6 +126,7 @@
         }
 		},
     {
+        
         "name": "samplename2",
         "type": "Microsoft.Compute/virtualMachines",
         "apiVersion": "2019-07-01",
